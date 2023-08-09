@@ -60,7 +60,7 @@ class Table:
                 ]
             )
         return None
-    
+
     def get_valid_actions(self):
         """
         Collect all the valid actions
@@ -91,8 +91,6 @@ def check_valid_move(card: Card, table: Table, destination: str):
                 if card.note == 1:
                     validity = True
     return validity
-
-
 
 
 T = Table()
