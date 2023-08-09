@@ -56,7 +56,6 @@ class Maze(object):
             return True
         return False
 
-
     def give_reward(self):
         if self.robot_position == (5, 5):
             return 0
