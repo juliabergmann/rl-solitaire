@@ -7,8 +7,8 @@ SYMBOLS = ["C", "D", "H", "S"]
 COLORS = {"C": 1, "D": 0, "H": 0, "S": 1}
 NOTES = range(1, 14)
 DECK = list(product(SYMBOLS, NOTES))
-
 NUM_COLS = 7
+
 
 # Classes
 class Card:
@@ -22,6 +22,7 @@ class Card:
 
 class Table(object):
     def __init__(self):
+        self.leftover_index = 0
         deck = []
         for symbol, note in DECK:
             deck.append(Card(symbol, note))
@@ -51,7 +52,7 @@ class Table(object):
                 else:
                     layout += "?? "
             layout += "\n"
-            
+
         layout += "\nLEFTOVER:\n"
         for elem in self.leftover:
             if elem.is_known:
@@ -78,35 +79,83 @@ class Table(object):
     def get_valid_actions(self):
         """
         Collect all the valid actions
+        Destination code:
+            -1 : top row
+            0 - NUM_COLS : other columns
         """
         valid_actions = []
-        # check finals
-        destination = "final_deck"
-        for i in range(NUM_COLS):
-            card = self.play_space[i][-1]
-            if check_valid_move(card=card, table=self, destination=destination):
+        # check from DEAL
+        for source_col in range(NUM_COLS):
+            # check top row
+            destination = -1
+            card = self.play_space[source_col][-1]
+            if self.check_valid_move(card=card, table=self, destination=destination):
                 valid_actions.append((card, destination))
+            # check other columns
+            for destination in range(NUM_COLS):
+                if destination == source_col:
+                    break
+                else:
+                    for card in self.play_space[source_col]:
+                        if card.is_known and card.movable:
+                            if self.check_valid_move(
+                                card=card, table=self, destination=destination
+                            ):
+                                valid_actions.append((card, destination))
+
+        # check from LEFTOVER
+        # check top row
+        destination = -1
+        card = self.leftover[self.leftover_index]
+        if self.check_valid_move(card=card, table=self, destination=destination):
+            valid_actions.append((card, destination))
+        # check other columns
+        for destination in range(NUM_COLS):
+            if card.is_known and card.movable:
+                if self.check_valid_move(
+                    card=card, table=self, destination=destination
+                ):
+                    valid_actions.append((card, destination))
+
         return valid_actions
 
+    def check_valid_move(self, card: Card, destination: str):
+        """
+        Check the validity of putting `card_1` on top of `card_2`
+        """
+        validity = False
+        if card.movable:
+            if destination == 0:  # TOP ROW
+                symbol = card.symbol
+                if len(self.final_deck[symbol]):
+                    card_2 = self.final_deck[symbol][-1]
+                    if card.note == card_2.note + 1:
+                        validity = True
+                else:
+                    if card.note == 1:
+                        validity = True
 
-def check_valid_move(card: Card, table: Table, destination: str):
-    """
-    Check the validity of putting `card_1` on top of `card_2`
-    """
-    validity = False
-    if card.movable:
-        if destination == "final_deck":  # when
-            symbol = card.symbol
-            if len(table.final_deck[symbol]):
-                card_2 = table.final_deck[symbol][-1]
-                if card.note == card_2.note + 1:
-                    validity = True
+            elif destination < NUM_COLS:  # OTHER COLUMN
+                symbol = card.symbol
+                color = COLORS[symbol]
+                if len(self.play_space[destination]):
+                    card_2 = self.play_space[destination][-1]
+                    color_2 = COLORS[card_2.symbol]
+
+                    if card.note == card_2.note - 1 and 1 - color == color_2:
+                        validity = True
+                else:  # KING
+                    if card.note == 13:
+                        validity = True
+                pass
+
             else:
-                if card.note == 1:
-                    validity = True
-    return validity
+                raise ValueError("Invalid destination")
+
+        return validity
 
 
 T = Table()
 print(T)
-print(T.get_valid_actions())
+for card, dest in T.get_valid_actions():
+    print(card.symbol + str(card.note) + " ---> " + str(dest))
