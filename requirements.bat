@@ -1,3 +1,4 @@
+black .
 pip install pip-tools 
 pip freeze > "requirements.in" 
 pip-compile -o requirements.txt requirements.in 
