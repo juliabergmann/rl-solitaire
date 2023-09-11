@@ -3,6 +3,7 @@ from random import shuffle
 
 from params import DECK, SYMBOLS, NUM_COLS, COLORS
 
+
 # Classes
 class Card(object):
     def __init__(self, symbol: str, note: int):
@@ -166,12 +167,12 @@ class Table(object):
             elif destination == -1:
                 # To top row
                 self.final_deck[symbol].append(card)
-                self.leftover.pop(self.leftover_index) # no need to update index!
+                self.leftover.pop(self.leftover_index)  # no need to update index!
             elif destination in range(NUM_COLS):
                 # To a column
                 self.play_space[destination][-1].movable = False
                 self.play_space[destination].append(card)
-                self.leftover.pop(self.leftover_index) # no need to update index!
+                self.leftover.pop(self.leftover_index)  # no need to update index!
                 pass
             else:
                 raise ValueError("Unknown destination code.")
@@ -186,12 +187,12 @@ class Table(object):
                 pass
             else:
                 raise ValueError("Unknown destination code.")
-            
+
         elif source in range(NUM_COLS):
             if destination == -1:
                 # To top row
                 self.final_deck[symbol].append(card)
-                self.play_space[source].pop(-1) # no need to update index!
+                self.play_space[source].pop(-1)  # no need to update index!
                 if len(self.play_space[source]):
                     self.play_space[source][-1].movable = True
                     self.play_space[source][-1].is_known = True
@@ -206,7 +207,7 @@ class Table(object):
                 pass
             else:
                 raise ValueError("Unknown destination code.")
-            
+
         else:
             raise ValueError("Unkown source code.")
         return None
@@ -217,4 +218,12 @@ class Table(object):
             if len(finals) != 14:
                 value = False
         return value
-            
+
+    def give_reward(self):
+        if self.is_game_over():
+            return 0
+        else:
+            return -1
+
+    def get_state_and_reward(self):
+        return self.play_space, self.leftover, self.final_deck, self.give_reward()
