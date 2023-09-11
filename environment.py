@@ -212,5 +212,9 @@ class Table(object):
         return None
 
     def is_game_over(self):
-        return None
+        value = True
+        for finals in self.final_deck.values():
+            if len(finals) != 14:
+                value = False
+        return value
             
