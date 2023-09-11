@@ -82,8 +82,12 @@ class Table(object):
         """
         Collect all the valid actions
         Destination code:
-            -1 : top row
-            0:NUM_COLS : other columns
+            -1  :   top row
+            0:7 :   other columns
+        Target code:
+            -2  :   leftovers
+            -1  :   top row
+            0:7 :   other columns
         """
         valid_actions = []
         # check from DEAL
@@ -92,7 +96,7 @@ class Table(object):
             destination = -1
             card = self.play_space[source_col][-1]
             if self.check_valid_move(card=card, destination=destination):
-                valid_actions.append((card, destination))
+                valid_actions.append((card, destination, source_col))
             # check other columns
             for destination in range(NUM_COLS):
                 if destination == source_col:
@@ -103,19 +107,22 @@ class Table(object):
                             if self.check_valid_move(
                                 card=card, destination=destination
                             ):
-                                valid_actions.append((card, destination))
+                                valid_actions.append((card, destination, source_col))
 
         # check from LEFTOVER
         # check top row
         destination = -1
         card = self.leftover[self.leftover_index]
         if self.check_valid_move(card=card, destination=destination):
-            valid_actions.append((card, destination))
+            valid_actions.append((card, destination, -2))
         # check other columns
         for destination in range(NUM_COLS):
             if card.is_known and card.movable:
                 if self.check_valid_move(card=card, destination=destination):
-                    valid_actions.append((card, destination))
+                    valid_actions.append((card, destination, -2))
+
+        # drawing from leftover is always an option
+        valid_actions.append((card, -2, -2))
 
         return valid_actions
 
@@ -154,14 +161,44 @@ class Table(object):
 
         return validity
 
-    def update_table(self, action):
+    def update_table(self, action: tuple[Card, int, int]):
+        card, destination, source = action
+        symbol = card.symbol
+        if source == -2:
+                # From deck
+                if destination == -2:
+                    # Nem draw from deck
+                    self.leftover_index += 1
+                    self.leftover_index = self.leftover_index % len(self.leftover)
+                    card.movable = False
+                elif destination == -1:
+                    # To top row
+                    self.final_deck[symbol].append(card)
+                    self.leftover.pop(self.leftover_index) # no need to update index!
+                elif destination < NUM_COLS:
+                    # To a column
+                    self.play_space[destination].append(card)
+                    self.leftover.pop(self.leftover_index) # no need to update index!
+                    pass
+                else:
+                    raise ValueError("Unknown destination code.")
+                # what's under the next field
+                self.leftover[self.leftover_index].is_known = True
+                self.leftover[self.leftover_index].movable = True
         return None
 
     def is_game_over(self):
         return None
 
-
-T = Table()
-print(T)
-for card, dest in T.get_valid_actions():
-    print(card.symbol + str(card.note) + " ---> " + str(dest))
+test = True
+while test:
+    T = Table()
+    print(T)
+    for action in T.get_valid_actions():
+        card, dest, source = action
+        print(f"{card.symbol}{str(card.note)}: {str(source)} ---> {str(dest)}")
+        if source == -2 and dest == 6:
+            T.update_table(action)
+            print(T)
+            test = False
+            
