@@ -3,8 +3,9 @@ from itertools import product
 from random import shuffle
 
 # Constants
-SYMBOLS = ["C", "D", "H", "S"]
-COLORS = {"C": 1, "D": 0, "H": 0, "S": 1}
+# clubs (♣), diamonds (♦), hearts (♥), and spades (♠)
+SYMBOLS = ["♣", "♠", "♥", "♦"]
+COLORS = {"♣": 1, "♠": 1, "♥": 0, "♦": 0}
 NOTES = range(1, 14)
 DECK = list(product(SYMBOLS, NOTES))
 NUM_COLS = 7
@@ -82,7 +83,7 @@ class Table(object):
         Collect all the valid actions
         Destination code:
             -1 : top row
-            0 - NUM_COLS : other columns
+            0:NUM_COLS : other columns
         """
         valid_actions = []
         # check from DEAL
