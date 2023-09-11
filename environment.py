@@ -1,15 +1,7 @@
 # Imports
-from itertools import product
 from random import shuffle
 
-# Constants
-# clubs (♣), diamonds (♦), hearts (♥), and spades (♠)
-SYMBOLS = ["♣", "♠", "♥", "♦"]
-COLORS = {"♣": 1, "♠": 1, "♥": 0, "♦": 0}
-NOTES = range(1, 14)
-DECK = list(product(SYMBOLS, NOTES))
-NUM_COLS = 7
-
+from params import DECK, SYMBOLS, NUM_COLS, COLORS
 
 # Classes
 class Card(object):
@@ -142,7 +134,7 @@ class Table(object):
                     if card.note == 1:
                         validity = True
 
-            elif destination < NUM_COLS:  # OTHER COLUMN
+            elif destination in range(NUM_COLS):  # OTHER COLUMN
                 symbol = card.symbol
                 color = COLORS[symbol]
                 if len(self.play_space[destination]):
@@ -165,40 +157,60 @@ class Table(object):
         card, destination, source = action
         symbol = card.symbol
         if source == -2:
-                # From deck
-                if destination == -2:
-                    # Nem draw from deck
-                    self.leftover_index += 1
-                    self.leftover_index = self.leftover_index % len(self.leftover)
-                    card.movable = False
-                elif destination == -1:
-                    # To top row
-                    self.final_deck[symbol].append(card)
-                    self.leftover.pop(self.leftover_index) # no need to update index!
-                elif destination < NUM_COLS:
-                    # To a column
-                    self.play_space[destination].append(card)
-                    self.leftover.pop(self.leftover_index) # no need to update index!
-                    pass
-                else:
-                    raise ValueError("Unknown destination code.")
-                # what's under the next field
-                self.leftover[self.leftover_index].is_known = True
-                self.leftover[self.leftover_index].movable = True
+            # From deck
+            if destination == -2:
+                # Nem draw from deck
+                self.leftover_index += 1
+                self.leftover_index = self.leftover_index % len(self.leftover)
+                card.movable = False
+            elif destination == -1:
+                # To top row
+                self.final_deck[symbol].append(card)
+                self.leftover.pop(self.leftover_index) # no need to update index!
+            elif destination in range(NUM_COLS):
+                # To a column
+                self.play_space[destination][-1].movable = False
+                self.play_space[destination].append(card)
+                self.leftover.pop(self.leftover_index) # no need to update index!
+                pass
+            else:
+                raise ValueError("Unknown destination code.")
+            # what's under the next field
+            self.leftover[self.leftover_index].is_known = True
+            self.leftover[self.leftover_index].movable = True
+
+        elif source == -1:
+            # TODO
+            if destination in range(NUM_COLS):
+                # bring something back from top row
+                pass
+            else:
+                raise ValueError("Unknown destination code.")
+            
+        elif source in range(NUM_COLS):
+            if destination == -1:
+                # To top row
+                self.final_deck[symbol].append(card)
+                self.play_space[source].pop(-1) # no need to update index!
+                if len(self.play_space[source]):
+                    self.play_space[source][-1].movable = True
+                    self.play_space[source][-1].is_known = True
+                pass
+            elif destination in range(NUM_COLS):
+                self.play_space[destination][-1].movable = False
+                self.play_space[destination].append(card)
+                self.play_space[source].pop(-1)
+                if len(self.play_space[source]):
+                    self.play_space[source][-1].movable = True
+                    self.play_space[source][-1].is_known = True
+                pass
+            else:
+                raise ValueError("Unknown destination code.")
+            
+        else:
+            raise ValueError("Unkown source code.")
         return None
 
     def is_game_over(self):
         return None
-
-test = True
-while test:
-    T = Table()
-    print(T)
-    for action in T.get_valid_actions():
-        card, dest, source = action
-        print(f"{card.symbol}{str(card.note)}: {str(source)} ---> {str(dest)}")
-        if source == -2 and dest == 6:
-            T.update_table(action)
-            print(T)
-            test = False
             
