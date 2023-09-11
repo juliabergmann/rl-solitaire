@@ -11,7 +11,7 @@ NUM_COLS = 7
 
 
 # Classes
-class Card:
+class Card(object):
     def __init__(self, symbol: str, note: int):
         self.symbol = symbol
         self.note = note
@@ -22,28 +22,29 @@ class Card:
 
 class Table(object):
     def __init__(self):
+        # Parameters
         self.leftover_index = 0
-        deck = []
-        for symbol, note in DECK:
-            deck.append(Card(symbol, note))
+
+        # Initialize
+        deck = [Card(symbol, note) for symbol, note in DECK]
+        # Shuffle
         shuffle(deck)
+        # Deal
         self.final_deck = {symbol: [] for symbol in SYMBOLS}
-        self.play_space = []
-        for i in range(NUM_COLS):
-            self.play_space.append([])
-            for _ in range(i + 1):
-                self.play_space[-1].append(deck[0])
-                deck.pop(0)
-        self.leftover = deck
+        ind_start = {i: sum(j for j in range(i + 1)) for i in range(NUM_COLS)}
+        ind_end = {i: ind_start[i] + i + 1 for i in range(NUM_COLS)}
+        self.play_space = {i: deck[ind_start[i] : ind_end[i]] for i in range(NUM_COLS)}
+        self.leftover = deck[28:-1]
         self.leftover[0].is_known = True
         self.leftover[0].movable = True
-        for column in self.play_space:
+        for column in self.play_space.values():
             column[-1].is_known = True
             column[-1].movable = True
 
     def __str__(self):
         layout = "\nDEAL:\n"
-        for column in self.play_space:
+        for col, column in self.play_space.items():
+            layout += f"{col} >> "
             for elem in column:
                 if elem.is_known:
                     layout += elem.symbol
@@ -89,7 +90,7 @@ class Table(object):
             # check top row
             destination = -1
             card = self.play_space[source_col][-1]
-            if self.check_valid_move(card=card, table=self, destination=destination):
+            if self.check_valid_move(card=card, destination=destination):
                 valid_actions.append((card, destination))
             # check other columns
             for destination in range(NUM_COLS):
@@ -99,7 +100,7 @@ class Table(object):
                     for card in self.play_space[source_col]:
                         if card.is_known and card.movable:
                             if self.check_valid_move(
-                                card=card, table=self, destination=destination
+                                card=card, destination=destination
                             ):
                                 valid_actions.append((card, destination))
 
@@ -107,25 +108,23 @@ class Table(object):
         # check top row
         destination = -1
         card = self.leftover[self.leftover_index]
-        if self.check_valid_move(card=card, table=self, destination=destination):
+        if self.check_valid_move(card=card, destination=destination):
             valid_actions.append((card, destination))
         # check other columns
         for destination in range(NUM_COLS):
             if card.is_known and card.movable:
-                if self.check_valid_move(
-                    card=card, table=self, destination=destination
-                ):
+                if self.check_valid_move(card=card, destination=destination):
                     valid_actions.append((card, destination))
 
         return valid_actions
 
-    def check_valid_move(self, card: Card, destination: str):
+    def check_valid_move(self, card: Card, destination: int):
         """
         Check the validity of putting `card_1` on top of `card_2`
         """
         validity = False
         if card.movable:
-            if destination == 0:  # TOP ROW
+            if destination == -1:  # TOP ROW
                 symbol = card.symbol
                 if len(self.final_deck[symbol]):
                     card_2 = self.final_deck[symbol][-1]
@@ -153,6 +152,12 @@ class Table(object):
                 raise ValueError("Invalid destination")
 
         return validity
+
+    def update_table(self, action):
+        return None
+
+    def is_game_over(self):
+        return None
 
 
 T = Table()
