@@ -220,10 +220,15 @@ class Table(object):
         return value
 
     def give_reward(self):
-        if self.is_game_over():
-            return 0
-        else:
-            return -1
+        num_of_known_cards = 0
+        for card in self.leftover:
+            if card.is_known:
+                num_of_known_cards += 1
+        for col in self.play_space.values():
+            for card in col:
+                if card.is_known:
+                    num_of_known_cards += 1
+        return num_of_known_cards
 
     def get_state_and_reward(self):
-        return self.play_space, self.leftover, self.final_deck, self.give_reward()
+        return self, self.give_reward()
