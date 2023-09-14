@@ -22,6 +22,3 @@ class Foundation(object):
         except:
             return None
 
-    def add(self, card: Card):
-        self.pile.append(card)
-        pass
