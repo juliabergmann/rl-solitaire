@@ -7,6 +7,7 @@ from environment.foundation import Foundation
 from environment.card import Card
 from environment.tableau import Tableau
 from environment.talon import Talon
+from environment.action import Action
 
 
 # Game
@@ -38,7 +39,7 @@ class Game(object):
             - foundation    ->  tableau
         """
         card: Card
-        valid_actions = []
+        valid_actions: List[Action] = []
         # FROM STOCK ...
         if len(self.stock):
             card = self.stock[0]
@@ -83,12 +84,13 @@ class Game(object):
         for foundation in self.foundations:
             if len(foundation.pile):
                 card = foundation.pile[-1]
+                ## ... TO TABLEAU
                 for pile_to in range(NUM_PILES):
                     if self.check_valid_move(
                         card=card, from_="foundation", to_="tableau", pile_to=pile_to
                     ):
                         valid_actions.append((card, "foundation", "tableau"))
-        ## ... TO TABLEAU
+
         return valid_actions
 
     def check_valid_move(
