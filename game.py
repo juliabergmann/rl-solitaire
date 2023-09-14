@@ -16,9 +16,9 @@ class Game(object):
         self.leftover_index = 0
         self.steps = 0
         # Initialize
-        self.foundations: Dict[str, Foundation] = {
-            symbol: Foundation(symbol=symbol) for symbol in SYMBOLS
-        }
+        self.foundations: List[Foundation] = [
+            Foundation(symbol=symbol) for symbol in SYMBOLS
+        ]
         self.stock: Stock = Stock(pack=PACK)
         # Deal
         self.tableau: Tableau = self.stock.deal(num_piles=NUM_PILES)
@@ -28,71 +28,86 @@ class Game(object):
 
     def get_valid_actions(self):
         """
-        Collect all the valid actions
-        Destination code:
-            -1  :   top row
-            0:7 :   other columns
-        Source code:
-            -2  :   leftovers
-            -1  :   top row
-            0:7 :   other columns
+        Collect all the valid actions.
+        Possible actions:
+            - stock         ->  talon           (Note: always valid.)
+            - stock         ->  tableau
+            - stock         ->  foundation
+            - tableau       ->  tableau
+            - tableau       ->  foundation
+            - foundation    ->  tableau
         """
+        card: Card
         valid_actions = []
-        # check from DEAL
-        for source_col in range(NUM_PILES):
-            if len(self.tableau[source_col]):
-                # check top row
-                destination = -1
-                card = self.tableau[source_col][-1]
+        # FROM STOCK ...
+        if len(self.stock):
+            card = self.stock[0]
+            ## ... TO TALON
+            valid_actions.append((card, "stock", "talon"))
+            ## ... TO TABLEAU
+            for pile_to in range(NUM_PILES):
                 if self.check_valid_move(
-                    card=card, destination=destination, source=source_col
+                    card=card, from_="stock", to_="tableau", pile_to=pile_to
                 ):
-                    valid_actions.append((card, destination, source_col))
-                # check other columns
-                for destination in range(NUM_PILES):
-                    if destination == source_col:
+                    valid_actions.append((card, "stock", "tableau"))
+            ## ... TO FOUNDATION
+            if self.check_valid_move(card=card, from_="stock", to_="foundation"):
+                valid_actions.append((card, "stock", "foundation"))
+
+        # FROM TABLEAU ...
+        for pile_from in range(NUM_PILES):
+            if len(self.tableau[pile_from]):
+                card = self.tableau[pile_from][-1]
+                ## ... TO TABLEAU
+                for pile_to in range(NUM_PILES):
+                    if pile_from == pile_to:
                         break
                     else:
-                        for card in self.tableau[source_col]:
-                            if card.face_up and card.movable:
+                        for card in self.tableau[pile_from]:
+                            if card.face_up:
                                 if self.check_valid_move(
                                     card=card,
-                                    destination=destination,
-                                    source=source_col,
+                                    from_="tableau",
+                                    to_="tableau",
+                                    pile_from=pile_from,
+                                    pile_to=pile_to,
                                 ):
-                                    valid_actions.append(
-                                        (card, destination, source_col)
-                                    )
+                                    valid_actions.append((card, "tableau", "tableau"))
+                ## ... TO FOUNDATION
+                if self.check_valid_move(
+                    card=card, from_="tableau", to_="foundation", pile_from=pile_from
+                ):
+                    valid_actions.append((card, "tableau", "foundation"))
 
-        # check from LEFTOVER
-        # check top row
-        if len(self.stock):
-            destination = -1
-            source = -2
-            card = self.stock[self.leftover_index]
-            if self.check_valid_move(card=card, destination=destination, source=source):
-                valid_actions.append((card, destination, source))
-            # check other columns
-            for destination in range(NUM_PILES):
-                if card.face_up and card.movable:
+        # FROM FOUNDATION ...
+        for foundation in self.foundations:
+            if len(foundation.pile):
+                card = foundation.pile[-1]
+                for pile_to in range(NUM_PILES):
                     if self.check_valid_move(
-                        card=card, destination=destination, source=source
+                        card=card, from_="foundation", to_="tableau", pile_to=pile_to
                     ):
-                        valid_actions.append((card, destination, source))
-
-        # drawing from stock is always an option
-        valid_actions.append((card, -2, -2))
-
+                        valid_actions.append((card, "foundation", "tableau"))
+        ## ... TO TABLEAU
         return valid_actions
 
-    def check_valid_move(self, card: Card, destination: int, source: int):
+    def check_valid_move(
+        self,
+        card: Card,
+        to_: int,
+        from_: int,
+        pile_from: int = None,
+        pile_to: int = None,
+    ):
         """
-        Check the validity of putting `card_1` on top of `card_2`
+        Check the validity of putting `card` from `from_` to `to_`.\n
+        If `from_` is "tableau", then `pile_from` is required.\n
+        If `to_` is "tableau", then `pile_to` is required.
         """
         validity = False
         if card.movable:
-            if destination == -1:  # TOP ROW
-                if not source in range(NUM_PILES) or self.tableau[source][-1] == card:
+            if to_ == -1:  # TOP ROW
+                if not from_ in range(NUM_PILES) or self.tableau[from_][-1] == card:
                     symbol = card.symbol
                     if len(self.foundations[symbol]):
                         card_2 = self.foundations[symbol][-1]
@@ -102,11 +117,11 @@ class Game(object):
                         if card.rank == 1:
                             validity = True
 
-            elif destination in range(NUM_PILES):  # OTHER COLUMN
+            elif to_ in range(NUM_PILES):  # OTHER COLUMN
                 symbol = card.symbol
                 color = COLORS[symbol]
-                if len(self.tableau[destination]):
-                    card_2 = self.tableau[destination][-1]
+                if len(self.tableau[to_]):
+                    card_2 = self.tableau[to_][-1]
                     color_2 = COLORS[card_2.symbol]
 
                     if card.rank == card_2.rank - 1 and 1 - color == color_2:
