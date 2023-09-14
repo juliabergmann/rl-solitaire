@@ -111,45 +111,9 @@ class Game(object):
 
     def check_valid_move(self, action: Action):
         """
-        Check the validity of putting `card` from `from_` to `to_`.\n
-        If `from_` is "tableau", then `pile_from` is required.\n
-        If `to_` is "tableau", then `pile_to` is required.
+        Check the validity of the action.
         """
-        card = action.card
-        from_ = action.from_
-        to_ = action.to_
-        pile_from = action.pile_from
-        pile_to = action.pile_to
-        validity = False
-        if card.movable:
-            if to_ == -1:  # TOP ROW
-                if not from_ in range(NUM_PILES) or self.tableau[from_][-1] == card:
-                    symbol = card.symbol
-                    if len(self.foundations[symbol]):
-                        card_2 = self.foundations[symbol][-1]
-                        if card.rank == card_2.rank + 1:
-                            validity = True
-                    else:
-                        if card.rank == 1:
-                            validity = True
-
-            elif to_ in range(NUM_PILES):  # OTHER COLUMN
-                symbol = card.symbol
-                color = COLORS[symbol]
-                if len(self.tableau[to_]):
-                    card_2 = self.tableau[to_][-1]
-                    color_2 = COLORS[card_2.symbol]
-
-                    if card.rank == card_2.rank - 1 and 1 - color == color_2:
-                        validity = True
-                else:  # KING
-                    if card.rank == max(RANKS):
-                        validity = True
-                pass
-
-            else:
-                raise ValueError("Invalid destination")
-
+        validity = action.check_validity(game=self)
         return validity
 
     def update_table(self, action: tuple[Card, int, int]):
@@ -218,11 +182,10 @@ class Game(object):
         return None
 
     def is_game_over(self):
-        value = True
-        for finals in self.foundations.values():
-            if len(finals) != len(RANKS):
-                value = False
-        return value
+        for foundation in self.foundations:
+            if not foundation.complete:
+                return False
+        return True
 
     def give_reward(self):
         num_of_known_cards = 0
@@ -239,13 +202,14 @@ class Game(object):
         return self, self.give_reward()
 
     def end_game(self):
-        for key, _ in self.foundations.items():
-            self.foundations[key] = RANKS
+        for foundation in self.foundations:
+            foundation.complete = True
         return None
 
     def __str__(self):
         layout = "\nFOUNDATIONS:\n"
-        for symbol, foundation in self.foundations.items():
+        for foundation in self.foundations:
+            symbol = foundation.symbol
             layout += symbol + ": "
             for card in foundation.pile:
                 if card.face_up:

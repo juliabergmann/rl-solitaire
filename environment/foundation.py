@@ -13,6 +13,7 @@ class Foundation(object):
     def __init__(self, symbol: str) -> None:
         self.symbol = symbol
         self.pile: List[Card] = []
+        self.complete: bool = False
         pass
 
     def last_card(self) -> Card:
