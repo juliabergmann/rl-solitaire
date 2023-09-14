@@ -1,3 +1,6 @@
+from params import COLORS
+
+
 class Card(object):
     """
     The symbol of the Card is clubs (♣), diamonds (♦), hearts (♥), or spades (♠).
@@ -7,6 +10,7 @@ class Card(object):
 
     def __init__(self, symbol: str, rank: int):
         self.symbol = symbol
+        self.color = COLORS[symbol]
         self.rank = rank
         self.face_up = False
         self.movable = False
