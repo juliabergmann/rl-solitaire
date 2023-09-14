@@ -40,20 +40,27 @@ class Game(object):
         """
         card: Card
         valid_actions: List[Action] = []
+        action: Action
         # FROM STOCK ...
         if len(self.stock):
             card = self.stock[0]
             ## ... TO TALON
-            valid_actions.append((card, "stock", "talon"))
+            action = Action(card=card, from_="stock", to_="talon")
+            valid_actions += action
             ## ... TO TABLEAU
             for pile_to in range(NUM_PILES):
-                if self.check_valid_move(
-                    card=card, from_="stock", to_="tableau", pile_to=pile_to
-                ):
-                    valid_actions.append((card, "stock", "tableau"))
+                action = Action(
+                    card=card,
+                    from_="stock",
+                    to_="tableau",
+                    pile_to=pile_to,
+                )
+                if self.check_valid_move(action):
+                    valid_actions += action
             ## ... TO FOUNDATION
-            if self.check_valid_move(card=card, from_="stock", to_="foundation"):
-                valid_actions.append((card, "stock", "foundation"))
+            action = Action(card=card, from_="stock", to_="foundation")
+            if self.check_valid_move(action):
+                valid_actions += action
 
         # FROM TABLEAU ...
         for pile_from in range(NUM_PILES):
@@ -66,19 +73,24 @@ class Game(object):
                     else:
                         for card in self.tableau[pile_from]:
                             if card.face_up:
-                                if self.check_valid_move(
+                                action = Action(
                                     card=card,
                                     from_="tableau",
                                     to_="tableau",
                                     pile_from=pile_from,
                                     pile_to=pile_to,
-                                ):
-                                    valid_actions.append((card, "tableau", "tableau"))
+                                )
+                                if self.check_valid_move(action):
+                                    valid_actions += action
                 ## ... TO FOUNDATION
-                if self.check_valid_move(
-                    card=card, from_="tableau", to_="foundation", pile_from=pile_from
-                ):
-                    valid_actions.append((card, "tableau", "foundation"))
+                action = Action(
+                    card=card,
+                    from_="tableau",
+                    to_="foundation",
+                    pile_from=pile_from,
+                )
+                if self.check_valid_move(action):
+                    valid_actions += action
 
         # FROM FOUNDATION ...
         for foundation in self.foundations:
@@ -86,26 +98,28 @@ class Game(object):
                 card = foundation.pile[-1]
                 ## ... TO TABLEAU
                 for pile_to in range(NUM_PILES):
-                    if self.check_valid_move(
-                        card=card, from_="foundation", to_="tableau", pile_to=pile_to
-                    ):
-                        valid_actions.append((card, "foundation", "tableau"))
+                    action = Action(
+                        card=card,
+                        from_="foundation",
+                        to_="tableau",
+                        pile_to=pile_to,
+                    )
+                    if self.check_valid_move(action):
+                        valid_actions += action
 
         return valid_actions
 
-    def check_valid_move(
-        self,
-        card: Card,
-        to_: int,
-        from_: int,
-        pile_from: int = None,
-        pile_to: int = None,
-    ):
+    def check_valid_move(self, action: Action):
         """
         Check the validity of putting `card` from `from_` to `to_`.\n
         If `from_` is "tableau", then `pile_from` is required.\n
         If `to_` is "tableau", then `pile_to` is required.
         """
+        card = action.card
+        from_ = action.from_
+        to_ = action.to_
+        pile_from = action.pile_from
+        pile_to = action.pile_to
         validity = False
         if card.movable:
             if to_ == -1:  # TOP ROW
