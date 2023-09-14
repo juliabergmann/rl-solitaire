@@ -26,53 +26,6 @@ class Game(object):
         self.talon = Talon()
         return
 
-    def __str__(self):
-        layout = "\nFOUNDATIONS:\n"
-        for symbol, foundation in self.foundations.items():
-            layout += symbol + ": "
-            for card in foundation.pile:
-                if card.face_up:
-                    layout += card.symbol
-                    layout += str(card.rank)
-                    layout += " "
-                else:
-                    layout += "[] "
-            layout += "\n"
-
-        layout += "\nTABLEAU:\n"
-        for col, column in self.tableau.piles.items():
-            layout += f"{col} >> "
-            for card in column:
-                if card.face_up:
-                    layout += card.symbol
-                    layout += str(card.rank)
-                    layout += " "
-                else:
-                    layout += "[] "
-            layout += "\n"
-
-        layout += "\nSTOCK:\n"
-        for card in self.stock.cards:
-            if card.face_up:
-                layout += card.symbol
-                layout += str(card.rank)
-                layout += " "
-            else:
-                layout += "[] "
-        layout += "\n"
-
-        layout += "\nTALON:\n"
-        for card in self.talon.cards:
-            if card.face_up:
-                layout += card.symbol
-                layout += str(card.rank)
-                layout += " "
-            else:
-                layout += "[] "
-        layout += "\n"
-
-        return layout
-
     def get_valid_actions(self):
         """
         Collect all the valid actions
@@ -258,3 +211,50 @@ class Game(object):
         for key, _ in self.foundations.items():
             self.foundations[key] = RANKS
         return None
+
+    def __str__(self):
+        layout = "\nFOUNDATIONS:\n"
+        for symbol, foundation in self.foundations.items():
+            layout += symbol + ": "
+            for card in foundation.pile:
+                if card.face_up:
+                    layout += card.symbol
+                    layout += str(card.rank)
+                    layout += " "
+                else:
+                    layout += "[] "
+            layout += "\n"
+
+        layout += "\nTABLEAU:\n"
+        for col, column in self.tableau.piles.items():
+            layout += f"{col} >> "
+            for card in column:
+                if card.face_up:
+                    layout += card.symbol
+                    layout += str(card.rank)
+                    layout += " "
+                else:
+                    layout += "[] "
+            layout += "\n"
+
+        layout += "\nSTOCK:\n"
+        for card in self.stock.cards:
+            if card.face_up:
+                layout += card.symbol
+                layout += str(card.rank)
+                layout += " "
+            else:
+                layout += "[] "
+        layout += "\n"
+
+        layout += "\nTALON:\n"
+        for card in self.talon.cards:
+            if card.face_up:
+                layout += card.symbol
+                layout += str(card.rank)
+                layout += " "
+            else:
+                layout += "[] "
+        layout += "\n"
+
+        return layout
