@@ -1,5 +1,5 @@
 from environment.card import Card
-from params import NUM_PILES
+from params import NUM_PILES, RANKS
 
 
 class Action(object):
@@ -59,11 +59,15 @@ class Action(object):
 
     def to_tableau(self):
         # Check the target card
-        last_card = self.game.tableau.last_card(pile=self.pile_to)
-        # if the colors mismatch and ranks are ok
-        if self.card.color != last_card.color and self.card.rank == last_card.rank - 1:
-            return True
-        # otherwise
+        try:
+            last_card = self.game.tableau.last_card(pile=self.pile_to)
+            # if the colors mismatch and ranks are ok
+            if self.card.color != last_card.color and self.card.rank == last_card.rank - 1:
+                return True
+            # otherwise
+        except:
+            if self.card.rank == max(RANKS):
+                return True
         return False
 
     def to_foundation(self):

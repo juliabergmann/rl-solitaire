@@ -8,4 +8,4 @@ COLORS = {"♣": 1, "♠": 1, "♥": 0, "♦": 0}
 RANKS = range(1, 14)
 PACK = list(product(SYMBOLS, RANKS))
 NUM_PILES = 7
-MAX_STEPS = 1000
+MAX_STEPS = 2000

@@ -34,7 +34,7 @@ if __name__ == "__main__":
             player.update_state_history(
                 state, reward
             )  # update the robot memory with state and reward
-            if table.steps >= MAX_STEPS or counter > len(table.stock):
+            if table.steps >= MAX_STEPS or counter > 100:
                 # end the robot if it takes too long to find the goal
                 table.end_game()
 

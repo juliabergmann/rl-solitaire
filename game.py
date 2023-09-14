@@ -116,69 +116,68 @@ class Game(object):
         """
         return action.check_validity(game=self)
 
-    def update_table(self, action: tuple[Card, int, int]):
+    def update_table(self, action: Action):
+        """
+        Perform a valid action.
+        Possible actions:
+            - stock         ->  talon           (Note: always valid.)
+            - stock         ->  tableau
+            - stock         ->  foundation
+            - tableau       ->  tableau
+            - tableau       ->  foundation
+            - foundation    ->  tableau
+        """
+        # TODO
         self.steps += 1
-        card, destination, source = action
-        symbol = card.symbol
-        if source == -2:
-            # From deck
-            if destination == -2:
-                # Nem draw from deck
-                self.leftover_index += 1
-                card.movable = False
-            elif destination == -1:
-                # To top row
-                self.foundations[symbol].append(card)
-                self.stock.pop(self.leftover_index)  # no need to update index!
-            elif destination in range(NUM_PILES):
-                # To a column
-                # if len(self.tableau[destination]):
-                #     self.tableau[destination][-1].movable = False
-                self.tableau[destination].append(card)
-                self.stock.pop(self.leftover_index)  # no need to update index!
-                pass
-            else:
-                raise ValueError("Unknown destination code.")
-            # what's under the next field
-            if len(self.stock):
-                self.leftover_index = self.leftover_index % len(self.stock)
-                self.stock[self.leftover_index].face_up = True
-                self.stock[self.leftover_index].movable = True
+        symbol = action.card.symbol
 
-        elif source == -1:
-            # TODO
-            if destination in range(NUM_PILES):
-                # bring something back from top row
-                pass
-            else:
-                raise ValueError("Unknown destination code.")
+        # FROM STOCK ...
+        if action.from_ == "stock":
+            # ... TO TALON
+            if action.to_ == "talon":
+                self.talon.cards.append(action.card)
+            # ... TO TABLEAU
+            if action.to_ == "tableau":
+                self.tableau.piles[action.pile_to].append(action.card)
+            # ... TO FOUNDATION
+            if action.to_ == "foundation":
+                self.foundations[symbol].pile.append(action.card)
+            self.stock.cards.pop(0)
+            # refresh stock
+            if not len(self.stock.cards): # if empty
+                self.stock.cards = self.talon.cards.copy()
+                self.talon.cards = []
+                for card in self.stock.cards:
+                    card.face_up = False
+            self.stock.cards[0].face_up = True
 
-        elif source in range(NUM_PILES):
-            if destination == -1:
-                # To top row
-                self.foundations[symbol].append(card)
-                self.tableau[source].pop(-1)  # no need to update index!
-                if len(self.tableau[source]):
-                    self.tableau[source][-1].movable = True
-                    self.tableau[source][-1].face_up = True
+        # FROM TABLEAU ...
+        if action.from_ == "tableau":
+            # ... TO TABLEAU
+            if action.to_ == "tableau":
+                index = self.tableau.piles[action.pile_from].index(action.card)
+                self.tableau.piles[action.pile_to] += self.tableau.piles[action.pile_from][index:]
+                self.tableau.piles[action.pile_from] = self.tableau.piles[action.pile_from][:index]
                 pass
-            elif destination in range(NUM_PILES):
-                # TODO: most még csak az utolsó lapot tudja arrébb rakni
-                # if len(self.tableau[destination]):
-                #     self.tableau[destination][-1].movable = False
-                card_index = self.tableau[source].index(card)
-                for item in self.tableau[source][card_index:]:
-                    self.tableau[destination].append(item)
-                self.tableau[source] = self.tableau[source][:card_index]
-                if len(self.tableau[source]):
-                    self.tableau[source][-1].movable = True
-                    self.tableau[source][-1].face_up = True
+            # ... TO FOUNDATION
+            if action.to_ == "foundation":
+                self.foundations[symbol].pile.append(action.card)
+                self.tableau.piles[action.pile_from].pop(-1)
                 pass
-            else:
-                raise ValueError("Unknown destination code.")
+            # check if new card can be turned over
+            try:
+                next_card = self.tableau.piles[action.pile_from][-1]
+                next_card.face_up = True
+            except:
+                pass
 
-        else:
-            raise ValueError("Unkown source code.")
+        # FROM FOUNDATION ...
+        if action.from_ == "foundation":
+            # ... TO TABLEAU
+            
+            if action.to_ == "tableau":
+                pass
+        
         return None
 
     def is_game_over(self):
@@ -189,10 +188,10 @@ class Game(object):
 
     def give_reward(self):
         num_of_known_cards = 0
-        for card in self.stock:
+        for card in self.stock.cards:
             if card.face_up:
                 num_of_known_cards += 1
-        for col in self.tableau.values():
+        for col in self.tableau.piles.values():
             for card in col:
                 if card.face_up:
                     num_of_known_cards += 1

@@ -9,7 +9,7 @@ from auxiliary import allmax
 
 class Player(object):
     def __init__(
-        self, table: Game, alpha: float = 0.15, random_factor: float = 0.2
+        self, table: Game, alpha: float = 0.15, random_factor: float = 0.05
     ) -> None:
         self.state_history = [(table, 0)]
         self.alpha = alpha
@@ -41,11 +41,8 @@ class Player(object):
             else:
                 rewards = []
                 for action in allowed_moves:
-                    _, destination, source = action
                     rewards.append(0)
-                    if destination == -1:
-                        rewards[-1] += 2
-                    if source in range(NUM_PILES):
+                    if action.to_ == "foundation":
                         rewards[-1] += 1
                 max_places = allmax(rewards)
                 # print(f"moves: {allowed_moves}")
