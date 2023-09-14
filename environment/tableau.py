@@ -10,3 +10,6 @@ class Tableau(object):
     def __init__(self, num_piles: int) -> None:
         self.piles: Dict[int, List[Card]] = {i: [] for i in range(num_piles)}
         pass
+
+    def last_card(self, pile: int) -> Card:
+        return self.piles[pile][-1]
