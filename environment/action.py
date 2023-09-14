@@ -88,11 +88,19 @@ class Action(object):
         return False
 
     def __str__(self):
-        return "| {rank}{symbol} | {from_} | {to_} | {pile_from} | {pile_to}".format(
+        if self.pile_from is None:
+            pile_from = "X"
+        else:
+            pile_from = self.pile_from
+        if self.pile_to is None:
+            pile_to = "X"
+        else:
+            pile_to = self.pile_to
+        return "| {rank:>2}{symbol} | {from_:<10} | {to_:<10} | {pile_from:>3} | {pile_to:>3} |".format(
             rank=self.card.rank,
             symbol=self.card.symbol,
             from_=self.from_,
             to_=self.to_,
-            pile_from=self.pile_from,
-            pile_to=self.pile_to,
+            pile_from=pile_from,
+            pile_to=pile_to,
         )
