@@ -15,3 +15,6 @@ class Card(object):
         self.face_up = False
         self.movable = False
         pass
+
+    def __str__(self):
+        return f"{self.symbol}{self.rank}"
