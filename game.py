@@ -42,11 +42,12 @@ class Game(object):
         valid_actions: List[Action] = []
         action: Action
         # FROM STOCK ...
-        if len(self.stock):
-            card = self.stock[0]
+        if len(self.stock.cards):
+            card = self.stock.cards[0]
             ## ... TO TALON
             action = Action(card=card, from_="stock", to_="talon")
-            valid_actions += action
+            if self.check_validity(action):
+                valid_actions.append(action)
             ## ... TO TABLEAU
             for pile_to in range(NUM_PILES):
                 action = Action(
@@ -55,23 +56,23 @@ class Game(object):
                     to_="tableau",
                     pile_to=pile_to,
                 )
-                if self.check_valid_move(action):
-                    valid_actions += action
+                if self.check_validity(action):
+                    valid_actions.append(action)
             ## ... TO FOUNDATION
             action = Action(card=card, from_="stock", to_="foundation")
-            if self.check_valid_move(action):
-                valid_actions += action
+            if self.check_validity(action):
+                valid_actions.append(action)
 
         # FROM TABLEAU ...
         for pile_from in range(NUM_PILES):
-            if len(self.tableau[pile_from]):
-                card = self.tableau[pile_from][-1]
+            if len(self.tableau.piles[pile_from]):
+                card = self.tableau.piles[pile_from][-1]
                 ## ... TO TABLEAU
                 for pile_to in range(NUM_PILES):
                     if pile_from == pile_to:
                         break
                     else:
-                        for card in self.tableau[pile_from]:
+                        for card in self.tableau.piles[pile_from]:
                             if card.face_up:
                                 action = Action(
                                     card=card,
@@ -80,8 +81,8 @@ class Game(object):
                                     pile_from=pile_from,
                                     pile_to=pile_to,
                                 )
-                                if self.check_valid_move(action):
-                                    valid_actions += action
+                                if self.check_validity(action):
+                                    valid_actions.append(action)
                 ## ... TO FOUNDATION
                 action = Action(
                     card=card,
@@ -89,8 +90,8 @@ class Game(object):
                     to_="foundation",
                     pile_from=pile_from,
                 )
-                if self.check_valid_move(action):
-                    valid_actions += action
+                if self.check_validity(action):
+                    valid_actions.append(action)
 
         # FROM FOUNDATION ...
         for foundation in self.foundations.values():
@@ -104,17 +105,16 @@ class Game(object):
                         to_="tableau",
                         pile_to=pile_to,
                     )
-                    if self.check_valid_move(action):
-                        valid_actions += action
+                    if self.check_validity(action):
+                        valid_actions.append(action)
 
         return valid_actions
 
-    def check_valid_move(self, action: Action):
+    def check_validity(self, action: Action):
         """
         Check the validity of the action.
         """
-        validity = action.check_validity(game=self)
-        return validity
+        return action.check_validity(game=self)
 
     def update_table(self, action: tuple[Card, int, int]):
         self.steps += 1

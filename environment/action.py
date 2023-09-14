@@ -1,13 +1,19 @@
 from environment.card import Card
 from params import NUM_PILES
 
+
 class Action(object):
     """
     Description goes here.
     """
 
     def __init__(
-        self, card: Card, from_: str, to_: str, pile_from: int, pile_to: int
+        self,
+        card: Card,
+        from_: str,
+        to_: str,
+        pile_from: int = None,
+        pile_to: int = None,
     ) -> None:
         self.card = card
         self.from_ = from_
@@ -37,13 +43,14 @@ class Action(object):
 
     def check_validity(self, game):
         from game import Game
+
         self.game: Game = game
         func_map = {
-            "talon":self.to_talon,
-            "tableau":self.to_tableau,
-            "foundation":self.to_foundation,
+            "talon": self.to_talon,
+            "tableau": self.to_tableau,
+            "foundation": self.to_foundation,
         }
-        is_valid = func_map.get(self.to_, False)
+        is_valid = func_map.get(self.to_, False)()
         return is_valid
 
     def to_talon(self):
@@ -52,15 +59,12 @@ class Action(object):
 
     def to_tableau(self):
         # Check the target card
-        card_to = self.game.tableau.piles[self.pile_to][-1]
-        # If they haev the same color, it's NO-NO
-        if self.card.color == card_to.color:
-            return False
-        # If the ranks don't match, it's NO-No
-        if self.card.rank != card_to.rank + 1:
-            return False
-        # Otherwise: GO-GO :-)
-        return True
+        last_card = self.game.tableau.last_card(pile=self.pile_to)
+        # if the colors mismatch and ranks are ok
+        if self.card.color != last_card.color and self.card.rank == last_card.rank - 1:
+            return True
+        # otherwise
+        return False
 
     def to_foundation(self):
         # When we pick from tableau, it must be the last card:
@@ -70,7 +74,7 @@ class Action(object):
         # Otherwise, we check the foundation:
         symbol = self.card.symbol
         # If the foundation already has cards:
-        if len(self.game.foundations[symbol]):
+        if len(self.game.foundations[symbol].pile):
             # get the last card of the foundation
             last_card = self.game.foundations[symbol].last_card()
             # check if the ranks are correct:
@@ -82,3 +86,13 @@ class Action(object):
             if self.card.rank == 1:
                 return True
         return False
+
+    def __str__(self):
+        return "| {rank}{symbol} | {from_} | {to_} | {pile_from} | {pile_to}".format(
+            rank=self.card.rank,
+            symbol=self.card.symbol,
+            from_=self.from_,
+            to_=self.to_,
+            pile_from=self.pile_from,
+            pile_to=self.pile_to,
+        )
