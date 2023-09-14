@@ -1,5 +1,5 @@
-from params import NUM_COLS, MAX_STEPS
-from environment import Table
+from params import NUM_PILES, MAX_STEPS
+from game import Game
 from agent import Player
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,7 +10,7 @@ https://bicyclecards.com/how-to-play/solitaire
 """
 
 if __name__ == "__main__":
-    table = Table()
+    table = Game()
     player = Player(table, alpha=0.1, random_factor=0.25)
     moveHistory = []
     for i in range(1):
@@ -34,7 +34,7 @@ if __name__ == "__main__":
             player.update_state_history(
                 state, reward
             )  # update the robot memory with state and reward
-            if table.steps >= MAX_STEPS or counter > len(table.leftover):
+            if table.steps >= MAX_STEPS or counter > len(table.stock):
                 # end the robot if it takes too long to find the goal
                 table.end_game()
 
@@ -42,7 +42,7 @@ if __name__ == "__main__":
         moveHistory.append(
             table.steps
         )  # get a history of number of steps taken to plot later
-        table = Table()  # reinitialize the maze
+        table = Game()  # reinitialize the maze
 
 plt.semilogy(moveHistory, "o")
 plt.savefig("img.png")
@@ -50,12 +50,12 @@ plt.savefig("img.png")
 
 # test = True
 # while test:
-#     T = Table()
+#     T = Game()
 #     print(T)
 #     for action in T.get_valid_actions():
 #         card, dest, source = action
-#         print(f"{card.symbol}{str(card.note)}: {str(source)} ---> {str(dest)}")
-#         if source in range(NUM_COLS) and dest in range(NUM_COLS):
+#         print(f"{card.symbol}{str(card.rank)}: {str(source)} ---> {str(dest)}")
+#         if source in range(NUM_PILES) and dest in range(NUM_PILES):
 #             T.update_table(action)
 #             print(T)
 #             test = False

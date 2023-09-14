@@ -2,13 +2,14 @@ from random import random
 
 import numpy as np
 
-from environment import Table
-from params import NUM_COLS, allmax
+from game import Game
+from params import NUM_PILES
+from auxiliary import allmax
 
 
 class Player(object):
     def __init__(
-        self, table: Table, alpha: float = 0.15, random_factor: float = 0.2
+        self, table: Game, alpha: float = 0.15, random_factor: float = 0.2
     ) -> None:
         self.state_history = [(table, 0)]
         self.alpha = alpha
@@ -44,7 +45,7 @@ class Player(object):
                     rewards.append(0)
                     if destination == -1:
                         rewards[-1] += 2
-                    if source in range(NUM_COLS):
+                    if source in range(NUM_PILES):
                         rewards[-1] += 1
                 max_places = allmax(rewards)
                 # print(f"moves: {allowed_moves}")
