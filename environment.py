@@ -79,7 +79,7 @@ class Table(object):
         Destination code:
             -1  :   top row
             0:7 :   other columns
-        Target code:
+        Source code:
             -2  :   leftovers
             -1  :   top row
             0:7 :   other columns
@@ -91,7 +91,7 @@ class Table(object):
                 # check top row
                 destination = -1
                 card = self.play_space[source_col][-1]
-                if self.check_valid_move(card=card, destination=destination):
+                if self.check_valid_move(card=card, destination=destination, source=source_col):
                     valid_actions.append((card, destination, source_col))
                 # check other columns
                 for destination in range(NUM_COLS):
@@ -101,7 +101,7 @@ class Table(object):
                         for card in self.play_space[source_col]:
                             if card.is_known and card.movable:
                                 if self.check_valid_move(
-                                    card=card, destination=destination
+                                    card=card, destination=destination, source=source_col
                                 ):
                                     valid_actions.append((card, destination, source_col))
 
@@ -109,35 +109,37 @@ class Table(object):
         # check top row
         if len(self.leftover):
             destination = -1
+            source = -2
             card = self.leftover[self.leftover_index]
-            if self.check_valid_move(card=card, destination=destination):
-                valid_actions.append((card, destination, -2))
+            if self.check_valid_move(card=card, destination=destination, source=source):
+                valid_actions.append((card, destination, source))
             # check other columns
             for destination in range(NUM_COLS):
                 if card.is_known and card.movable:
-                    if self.check_valid_move(card=card, destination=destination):
-                        valid_actions.append((card, destination, -2))
+                    if self.check_valid_move(card=card, destination=destination, source=source):
+                        valid_actions.append((card, destination, source))
 
         # drawing from leftover is always an option
         valid_actions.append((card, -2, -2))
 
         return valid_actions
 
-    def check_valid_move(self, card: Card, destination: int):
+    def check_valid_move(self, card: Card, destination: int, source: int):
         """
         Check the validity of putting `card_1` on top of `card_2`
         """
         validity = False
         if card.movable:
             if destination == -1:  # TOP ROW
-                symbol = card.symbol
-                if len(self.final_deck[symbol]):
-                    card_2 = self.final_deck[symbol][-1]
-                    if card.note == card_2.note + 1:
-                        validity = True
-                else:
-                    if card.note == 1:
-                        validity = True
+                if not source in range(NUM_COLS) or self.play_space[source][-1] == card:
+                    symbol = card.symbol
+                    if len(self.final_deck[symbol]):
+                        card_2 = self.final_deck[symbol][-1]
+                        if card.note == card_2.note + 1:
+                            validity = True
+                    else:
+                        if card.note == 1:
+                            validity = True
 
             elif destination in range(NUM_COLS):  # OTHER COLUMN
                 symbol = card.symbol
@@ -174,8 +176,8 @@ class Table(object):
                 self.leftover.pop(self.leftover_index)  # no need to update index!
             elif destination in range(NUM_COLS):
                 # To a column
-                if len(self.play_space[destination]):
-                    self.play_space[destination][-1].movable = False
+                # if len(self.play_space[destination]):
+                #     self.play_space[destination][-1].movable = False
                 self.play_space[destination].append(card)
                 self.leftover.pop(self.leftover_index)  # no need to update index!
                 pass
@@ -206,10 +208,12 @@ class Table(object):
                 pass
             elif destination in range(NUM_COLS):
                 # TODO: most még csak az utolsó lapot tudja arrébb rakni
-                if len(self.play_space[destination]):
-                    self.play_space[destination][-1].movable = False
-                self.play_space[destination].append(card)
-                self.play_space[source].pop(-1)
+                # if len(self.play_space[destination]):
+                #     self.play_space[destination][-1].movable = False
+                card_index = self.play_space[source].index(card)
+                for item in self.play_space[source][card_index:]:
+                    self.play_space[destination].append(item)
+                self.play_space[source] = self.play_space[source][:card_index]
                 if len(self.play_space[source]):
                     self.play_space[source][-1].movable = True
                     self.play_space[source][-1].is_known = True

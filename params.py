@@ -5,9 +5,10 @@ from itertools import product
 # clubs (♣), diamonds (♦), hearts (♥), and spades (♠)
 SYMBOLS = ["♣", "♠", "♥", "♦"]
 COLORS = {"♣": 1, "♠": 1, "♥": 0, "♦": 0}
-NOTES = range(1, 6)
+NOTES = range(1, 14)
 DECK = list(product(SYMBOLS, NOTES))
-NUM_COLS = 2
+NUM_COLS = 7
+MAX_STEPS = 1000
 
 
 def allmax(a):
