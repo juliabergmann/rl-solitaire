@@ -29,7 +29,9 @@ class Action(object):
         )
         if (self.from_, self.to_) not in valid_string_pairs:
             raise ValueError("Not valid action: STRING error.")
-        if self.pile_from not in range(NUM_PILES) or self.pile_to not in range(
-            NUM_PILES
-        ):
-            raise ValueError("Not valid action: INTEGER error.")
+
+        if self.from_ == "tableau" and self.pile_from not in range(NUM_PILES):
+            raise ValueError("Not valid action: FROM error.")
+
+        if self.to_ == "tableau" and self.pile_to not in range(NUM_PILES):
+            raise ValueError("Not valid action: TO error.")
