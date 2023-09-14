@@ -17,9 +17,9 @@ class Game(object):
         self.leftover_index = 0
         self.steps = 0
         # Initialize
-        self.foundations: List[Foundation] = [
-            Foundation(symbol=symbol) for symbol in SYMBOLS
-        ]
+        self.foundations: Dict[str, Foundation] = {
+            symbol: Foundation(symbol=symbol) for symbol in SYMBOLS
+        }
         self.stock: Stock = Stock(pack=PACK)
         # Deal
         self.tableau: Tableau = self.stock.deal(num_piles=NUM_PILES)
@@ -93,7 +93,7 @@ class Game(object):
                     valid_actions += action
 
         # FROM FOUNDATION ...
-        for foundation in self.foundations:
+        for foundation in self.foundations.values():
             if len(foundation.pile):
                 card = foundation.pile[-1]
                 ## ... TO TABLEAU
@@ -182,7 +182,7 @@ class Game(object):
         return None
 
     def is_game_over(self):
-        for foundation in self.foundations:
+        for foundation in self.foundations.values():
             if not foundation.complete:
                 return False
         return True
@@ -202,14 +202,13 @@ class Game(object):
         return self, self.give_reward()
 
     def end_game(self):
-        for foundation in self.foundations:
+        for foundation in self.foundations.values():
             foundation.complete = True
         return None
 
     def __str__(self):
         layout = "\nFOUNDATIONS:\n"
-        for foundation in self.foundations:
-            symbol = foundation.symbol
+        for symbol, foundation in self.foundations.items():
             layout += symbol + ": "
             for card in foundation.pile:
                 if card.face_up:
