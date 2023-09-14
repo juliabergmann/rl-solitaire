@@ -9,7 +9,6 @@ class Action(object):
     def __init__(
         self, card: Card, from_: str, to_: str, pile_from: int, pile_to: int
     ) -> None:
-        from game import Game
         self.card = card
         self.from_ = from_
         self.to_ = to_
@@ -37,62 +36,49 @@ class Action(object):
             raise ValueError("Not valid action: TO error.")
 
     def check_validity(self, game):
-        self.game = game
+        from game import Game
+        self.game: Game = game
         func_map = {
-            ("stock", "talon"):self.stock_to_talon,
-            ("stock", "tableau"):self.stock_to_tableau,
-            ("stock", "foundation"):self.stock_to_foundation,
-            ("tableau", "tableau"):self.tableau_to_tableau,
-            ("tableau", "foundation"):self.tableau_to_foundation,
-            ("foundation", "tableau"):self.foundation_to_tableau,
+            "talon":self.to_talon,
+            "tableau":self.to_tableau,
+            "foundation":self.to_foundation,
         }
-        is_valid = func_map.get((self.from_, self.to_), False)
+        is_valid = func_map.get(self.to_, False)
         return is_valid
 
-    def stock_to_talon(self):
+    def to_talon(self):
+        # It's always allowed.
         return True
 
-    def stock_to_tableau(self):
-        card_in_tableau = self.game.tableau.piles[-1]
-        pass
+    def to_tableau(self):
+        # Check the target card
+        card_to = self.game.tableau.piles[self.pile_to][-1]
+        # If they haev the same color, it's NO-NO
+        if self.card.color == card_to.color:
+            return False
+        # If the ranks don't match, it's NO-No
+        if self.card.rank != card_to.rank + 1:
+            return False
+        # Otherwise: GO-GO :-)
+        return True
 
-    def stock_to_foundation(self):
-        pass
-
-    def tableau_to_tableau(self):
-        pass
-
-    def tableau_to_foundation(self):
-        pass
-
-    def foundation_to_tableau(self):
-        pass
-
-        # if card.movable:
-        #     if to_ == -1:  # TOP ROW
-        #         if not from_ in range(NUM_PILES) or self.tableau[from_][-1] == card:
-        #             symbol = card.symbol
-        #             if len(self.foundations[symbol]):
-        #                 card_2 = self.foundations[symbol][-1]
-        #                 if card.rank == card_2.rank + 1:
-        #                     validity = True
-        #             else:
-        #                 if card.rank == 1:
-        #                     validity = True
-
-        #     elif to_ in range(NUM_PILES):  # OTHER COLUMN
-        #         symbol = card.symbol
-        #         color = COLORS[symbol]
-        #         if len(self.tableau[to_]):
-        #             card_2 = self.tableau[to_][-1]
-        #             color_2 = COLORS[card_2.symbol]
-
-        #             if card.rank == card_2.rank - 1 and 1 - color == color_2:
-        #                 validity = True
-        #         else:  # KING
-        #             if card.rank == max(RANKS):
-        #                 validity = True
-        #         pass
-
-        #     else:
-        #         raise ValueError("Invalid destination")
+    def to_foundation(self):
+        # When we pick from tableau, it must be the last card:
+        if self.from_ == "tableau":
+            if self.game.tableau.piles[self.pile_from][-1] != self.card:
+                return False
+        # Otherwise, we check the foundation:
+        symbol = self.card.symbol
+        # If the foundation already has cards:
+        if len(self.game.foundations[symbol]):
+            # get the last card of the foundation
+            last_card = self.game.foundations[symbol].last_card()
+            # check if the ranks are correct:
+            if self.card.rank == last_card.rank + 1:
+                return True
+        # If the foundation is empty:
+        else:
+            # the card's rank must be 1
+            if self.card.rank == 1:
+                return True
+        return False
