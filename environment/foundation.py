@@ -22,3 +22,5 @@ class Foundation(object):
         except:
             return None
 
+    def num_of_cards(self) -> int:
+        return len(self.pile)

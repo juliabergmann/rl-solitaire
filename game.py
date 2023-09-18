@@ -1,6 +1,8 @@
 # Imports
 from typing import List, Dict
 
+import numpy as np
+
 from params import PACK, SYMBOLS, RANKS, NUM_PILES, COLORS
 from environment.stock import Stock
 from environment.foundation import Foundation
@@ -187,15 +189,16 @@ class Game(object):
         return True
 
     def give_reward(self):
-        num_of_known_cards = 0
-        for card in self.stock.cards:
-            if card.face_up:
-                num_of_known_cards += 1
-        for col in self.tableau.piles.values():
-            for card in col:
-                if card.face_up:
-                    num_of_known_cards += 1
-        return num_of_known_cards
+        """
+        sum of cards in foundation minus the std between the piles
+        """
+        num_in_foundation = [
+            foundation.num_of_cards()
+            for foundation in self.foundations.values()
+        ]
+        reward = sum(num_in_foundation)
+        reward -= np.std(num_in_foundation)
+        return reward
 
     def get_state_and_reward(self):
         return self, self.give_reward()
