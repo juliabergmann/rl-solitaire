@@ -151,7 +151,8 @@ class Game(object):
                 self.talon.cards = []
                 for card in self.stock.cards:
                     card.face_up = False
-            self.stock.cards[0].face_up = True
+            if  len(self.stock.cards):
+                self.stock.cards[0].face_up = True
 
         # FROM TABLEAU ...
         if action.from_ == "tableau":
@@ -175,9 +176,10 @@ class Game(object):
 
         # FROM FOUNDATION ...
         if action.from_ == "foundation":
-            # ... TO TABLEAU
-            
+            # ... TO TABLEAU            
             if action.to_ == "tableau":
+                self.tableau.piles[action.pile_to].append(action.card)
+                self.foundations[symbol].pile.pop(-1)
                 pass
         
         return None

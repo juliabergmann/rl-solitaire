@@ -59,13 +59,13 @@ class Action(object):
 
     def to_tableau(self):
         # Check the target card
-        try:
+        if len(self.game.tableau.piles[self.pile_to]):
             last_card = self.game.tableau.last_card(pile=self.pile_to)
             # if the colors mismatch and ranks are ok
             if self.card.color != last_card.color and self.card.rank == last_card.rank - 1:
                 return True
             # otherwise
-        except:
+        else:
             if self.card.rank == max(RANKS):
                 return True
         return False

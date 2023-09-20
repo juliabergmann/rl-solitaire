@@ -5,7 +5,7 @@ from itertools import product
 # clubs (♣), diamonds (♦), hearts (♥), and spades (♠)
 SYMBOLS = ["♣", "♠", "♥", "♦"]
 COLORS = {"♣": 1, "♠": 1, "♥": 0, "♦": 0}
-RANKS = range(1, 14)
+RANKS = range(1, 5)
 PACK = list(product(SYMBOLS, RANKS))
-NUM_PILES = 7
+NUM_PILES = 2
 MAX_STEPS = 2000

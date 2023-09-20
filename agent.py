@@ -1,4 +1,4 @@
-from random import random
+from typing import Dict
 
 import numpy as np
 
@@ -9,11 +9,21 @@ from auxiliary import allmax
 
 class Player(object):
     def __init__(
-        self, table: Game, alpha: float = 0.15, random_factor: float = 0.05
+        self, game: Game, alpha: float = 0.15, random_factor: float = 0.05
     ) -> None:
-        self.state_history = [(table, 0)]
+        self.state_history = [(game, 0)]
         self.alpha = alpha
         self.random_factor = random_factor
+
+        self.state : Game
+        self.reward_dict: Dict[(str, str): float] = {    
+            ("stock", "talon"):-3,
+            ("stock", "tableau"):-2,
+            ("stock", "foundation"):0,
+            ("tableau", "tableau"):-1,
+            ("tableau", "foundation"):0,
+            ("foundation", "tableau"):-0.5,
+        }
         pass
 
     def update_state_history(self, state, reward):
@@ -21,34 +31,31 @@ class Player(object):
 
     def learn(self):
         # TODO: how to learn
-        # target = 0  # we know the "ideal" reward
-        # a = self.alpha
-        # for state, reward in reversed(self.state_history):
-        #     self.G[state] = self.G[state] + a * (target - self.G[state])
-        # self.state_history = []  # reset the state_history
+        target = 0  # we know the "ideal" reward
+        a = self.alpha
+        for key, value in self.reward_dict.items():
+            self.reward_dict[key] = value + a * (target - value)
+        self.state_history = []  # reset the state_history
         self.random_factor -= 10e-5  # decrease random_factor
 
     def choose_action(self, allowed_moves):
-        if len(allowed_moves) == 1:
+        if len(allowed_moves) == 0:
+            print(self.state)
+        elif len(allowed_moves) == 1:
             next_move = allowed_moves[0]
         else:
             allowed_moves = np.array(allowed_moves)
             next_move = None
-            rand = random()
+            rand = np.random.random()
+            # print(f"Random: {round(rand, 3)}")
             if rand < self.random_factor:
-                choice = np.random.choice(range(len(allowed_moves)))
-                next_move = allowed_moves[choice]
+                next_move = np.random.choice(allowed_moves)
             else:
                 rewards = []
                 for action in allowed_moves:
-                    rewards.append(0)
-                    if action.to_ == "foundation":
-                        rewards[-1] += 1
+                    r = self.reward_dict[(action.from_, action.to_)]
+                    rewards.append(r)
                 max_places = allmax(rewards)
-                # print(f"moves: {allowed_moves}")
-                # print(f"rewards: {rewards}")
-                # print(f"argmaxs: {max_places}")
                 choice = np.random.choice(max_places)
                 next_move = allowed_moves[choice]
-                # print(f"next: {next_move}")
         return next_move
