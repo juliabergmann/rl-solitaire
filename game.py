@@ -146,12 +146,12 @@ class Game(object):
                 self.foundations[symbol].pile.append(action.card)
             self.stock.cards.pop(0)
             # refresh stock
-            if not len(self.stock.cards): # if empty
+            if not len(self.stock.cards):  # if empty
                 self.stock.cards = self.talon.cards.copy()
                 self.talon.cards = []
                 for card in self.stock.cards:
                     card.face_up = False
-            if  len(self.stock.cards):
+            if len(self.stock.cards):
                 self.stock.cards[0].face_up = True
 
         # FROM TABLEAU ...
@@ -159,8 +159,12 @@ class Game(object):
             # ... TO TABLEAU
             if action.to_ == "tableau":
                 index = self.tableau.piles[action.pile_from].index(action.card)
-                self.tableau.piles[action.pile_to] += self.tableau.piles[action.pile_from][index:]
-                self.tableau.piles[action.pile_from] = self.tableau.piles[action.pile_from][:index]
+                self.tableau.piles[action.pile_to] += self.tableau.piles[
+                    action.pile_from
+                ][index:]
+                self.tableau.piles[action.pile_from] = self.tableau.piles[
+                    action.pile_from
+                ][:index]
                 pass
             # ... TO FOUNDATION
             if action.to_ == "foundation":
@@ -176,12 +180,12 @@ class Game(object):
 
         # FROM FOUNDATION ...
         if action.from_ == "foundation":
-            # ... TO TABLEAU            
+            # ... TO TABLEAU
             if action.to_ == "tableau":
                 self.tableau.piles[action.pile_to].append(action.card)
                 self.foundations[symbol].pile.pop(-1)
                 pass
-        
+
         return None
 
     def is_game_over(self):
@@ -195,8 +199,7 @@ class Game(object):
         sum of cards in foundation minus the std between the piles
         """
         num_in_foundation = [
-            foundation.num_of_cards()
-            for foundation in self.foundations.values()
+            foundation.num_of_cards() for foundation in self.foundations.values()
         ]
         reward = sum(num_in_foundation)
         reward -= np.std(num_in_foundation)
