@@ -1,6 +1,7 @@
 # Imports
 from typing import List, Dict
 
+import pandas as pd
 import numpy as np
 
 from params import PACK, SYMBOLS, RANKS, NUM_PILES, COLORS
@@ -23,11 +24,24 @@ class Game(object):
             symbol: Foundation(symbol=symbol) for symbol in SYMBOLS
         }
         self.stock: Stock = Stock(pack=PACK)
+        # State table
+        self.state: pd.DataFrame = pd.DataFrame(
+            data=0,
+            columns=["in_foundation", "stock_index", "tableau_index", "hidden"],
+            index=[self.stock.cards]
+        )
+        self.state["hidden"] = 1 # in the beginning everything is hidden
         # Deal
         self.tableau: Tableau = self.stock.deal(num_piles=NUM_PILES)
         self.stock.cards[0].face_up = True
         self.talon = Talon()
+        # Update state matrix
+        self.update_state_matrix()
         return
+
+    def update_state_matrix(self) -> None:
+        
+        return None
 
     def get_valid_actions(self):
         """
