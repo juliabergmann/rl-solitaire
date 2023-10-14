@@ -15,14 +15,14 @@ class Player(object):
         self.alpha = alpha
         self.random_factor = random_factor
 
-        self.state : Game
-        self.reward_dict: Dict[(str, str): float] = {    
-            ("stock", "talon"):-3,
-            ("stock", "tableau"):-2,
-            ("stock", "foundation"):0,
-            ("tableau", "tableau"):-1,
-            ("tableau", "foundation"):0,
-            ("foundation", "tableau"):-0.5,
+        self.state: Game
+        self.reward_dict: Dict[(str, str):float] = {
+            ("stock", "talon"): -3,
+            ("stock", "tableau"): -2,
+            ("stock", "foundation"): 0,
+            ("tableau", "tableau"): -1,
+            ("tableau", "foundation"): 0,
+            ("foundation", "tableau"): -0.5,
         }
         pass
 

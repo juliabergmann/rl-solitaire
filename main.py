@@ -38,7 +38,7 @@ if __name__ == "__main__":
                 state, reward
             )  # update the robot memory with state and reward
             num_cards_to_roll = len(game.stock.cards) + len(game.talon.cards)
-            if game.steps >= MAX_STEPS or counter > num_cards_to_roll*2:
+            if game.steps >= MAX_STEPS or counter > num_cards_to_roll * 2:
                 # end the robot if it takes too long to find the goal
                 game.end_game()
                 learn_it = False

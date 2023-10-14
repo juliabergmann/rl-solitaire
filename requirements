@@ -1,0 +1,7 @@
+black .
+pip install pip-tools 
+pip freeze > "requirements.in" 
+pip-compile -o requirements.txt requirements.in 
+rm requirements.in 
+git add requirements.txt 
+git commit -m "update requirements" 

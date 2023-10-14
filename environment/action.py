@@ -62,7 +62,10 @@ class Action(object):
         if len(self.game.tableau.piles[self.pile_to]):
             last_card = self.game.tableau.last_card(pile=self.pile_to)
             # if the colors mismatch and ranks are ok
-            if self.card.color != last_card.color and self.card.rank == last_card.rank - 1:
+            if (
+                self.card.color != last_card.color
+                and self.card.rank == last_card.rank - 1
+            ):
                 return True
             # otherwise
         else:
