@@ -28,9 +28,9 @@ class Game(object):
         self.state: pd.DataFrame = pd.DataFrame(
             data=0,
             columns=["in_foundation", "stock_index", "tableau_index", "hidden"],
-            index=[self.stock.cards]
+            index=[self.stock.cards],
         )
-        self.state["hidden"] = 1 # in the beginning everything is hidden
+        self.state["hidden"] = 1  # in the beginning everything is hidden
         # Deal
         self.tableau: Tableau = self.stock.deal(num_piles=NUM_PILES)
         self.stock.cards[0].face_up = True
@@ -40,7 +40,6 @@ class Game(object):
         return
 
     def update_state_matrix(self) -> None:
-        
         return None
 
     def get_valid_actions(self):
